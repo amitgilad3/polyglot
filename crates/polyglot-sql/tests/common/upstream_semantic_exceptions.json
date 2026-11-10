@@ -809,5 +809,21 @@
     "upstream_expected": "CAST(x AS BIGNUMERIC)",
     "reason": "Trino DECIMAL(p,s) constrains precision and scale; an unparameterized BigQuery BIGNUMERIC cast does not retain these rounding/overflow checks. https://trino.io/docs/current/language/types.html#decimal https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#parameterized_data_types",
     "vendor_error": "Wide decimal casts require precision and scale enforcement"
+  },
+  {
+    "source": "postgres",
+    "target": "databricks",
+    "sql": "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount)",
+    "upstream_expected": "SELECT PERCENTILE_APPROX(amount, 0.5)",
+    "reason": "PERCENTILE_APPROX is approximate; Spark 3.3+ and Databricks run PERCENTILE_CONT ... WITHIN GROUP exactly. https://spark.apache.org/docs/latest/api/sql/index.html#percentile_cont",
+    "vendor_expected": "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount NULLS LAST)"
+  },
+  {
+    "source": "postgres",
+    "target": "spark",
+    "sql": "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount)",
+    "upstream_expected": "SELECT PERCENTILE_APPROX(amount, 0.5)",
+    "reason": "PERCENTILE_APPROX is approximate; Spark 3.3+ and Databricks run PERCENTILE_CONT ... WITHIN GROUP exactly. https://spark.apache.org/docs/latest/api/sql/index.html#percentile_cont",
+    "vendor_expected": "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount NULLS LAST)"
   }
 ]

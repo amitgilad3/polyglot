@@ -1302,8 +1302,7 @@ pub(super) fn rewrite(
 
             Action::PercentileContConvert => {
                 // PERCENTILE_CONT(p) WITHIN GROUP (ORDER BY col) ->
-                // Presto/Trino: APPROX_PERCENTILE(col, p)
-                // Spark/Databricks: PERCENTILE_APPROX(col, p)
+                // Presto/Trino/Athena: APPROX_PERCENTILE(col, p)
                 if let Expression::WithinGroup(wg) = e {
                     // Extract percentile value and order by column
                     let (percentile, _is_disc) =
@@ -1333,14 +1332,8 @@ pub(super) fn rewrite(
                                 "1".to_string(),
                             ))));
 
-                    let func_name = match target {
-                        DialectType::Presto | DialectType::Trino | DialectType::Athena => {
-                            "APPROX_PERCENTILE"
-                        }
-                        _ => "PERCENTILE_APPROX", // Spark, Databricks
-                    };
                     Ok(Expression::Function(Box::new(Function::new(
-                        func_name.to_string(),
+                        "APPROX_PERCENTILE".to_string(),
                         vec![col, percentile],
                     ))))
                 } else {

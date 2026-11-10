@@ -2497,11 +2497,10 @@ pub(super) fn normalize(
                         Action::Aggregates(aggregates::Action::StringAggConvert)
                     } else if matches!(
                         target,
-                        DialectType::Presto
-                            | DialectType::Trino
-                            | DialectType::Athena
-                            | DialectType::Spark
-                            | DialectType::Databricks
+                        // Not Spark or Databricks: since Spark 3.3 both run
+                        // PERCENTILE_CONT/PERCENTILE_DISC ... WITHIN GROUP exactly,
+                        // where PERCENTILE_APPROX is approximate.
+                        DialectType::Presto | DialectType::Trino | DialectType::Athena
                     ) && (matches!(&wg.this, Expression::Function(f) if f.name.eq_ignore_ascii_case("PERCENTILE_CONT") || f.name.eq_ignore_ascii_case("PERCENTILE_DISC"))
                         || matches!(&wg.this, Expression::AggregateFunction(af) if af.name.eq_ignore_ascii_case("PERCENTILE_CONT") || af.name.eq_ignore_ascii_case("PERCENTILE_DISC"))
                         || matches!(&wg.this, Expression::PercentileCont(_)))
